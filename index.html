@@ -16,12 +16,12 @@
 
 
 
-    <input  type='number' id="userInput"/>
-    <button id="answerBtn" >ENTER</button>
+    <input  type='number' inputmode="decimal" id="userInput"/>
+    <button id="answerBtn" >CORRECT ANSWERS</button>
     <br>
     <br>
-    <p2 id="count"></p2>
-    <p5 id="ratio">0</p5>
+
+    <p5 class="p5" id="ratio">0</p5>
     </div>
     </div>
     <div class="grid2">
@@ -34,7 +34,7 @@
     
     <input  type='text' id="Name"/>
     <br>
-    <p4>High Scores</p4>
+    <p4>History</p4>
 
     <div id=historydiv></div>
 
@@ -73,22 +73,28 @@
         const colRef = collection(db, 'highscore')
 
         input.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-        answerButtonOnClick()}
+        //if (e.key === 'Enter') {
+        //answerButtonOnClick()}
         if (e.key === ' ') {
-        startgame()
+            
+            startgame()
+            
+        
         }});
-        
-        
-
+        input.addEventListener('keyup', () => {
+            answerButtonOnClick()});
         
 
         function uploadScore(Name, correctcount){
-
-            addDoc(colRef, {
-                Name: Name.value,
-                Score: correctcount.value,
-            })
+            
+            if (highestscores.some(el => el < correctcount.value)){
+                addDoc(colRef, {
+                    Name: Name.value,
+                    Score: correctcount.value,
+                
+            })}else{
+                console.log(correctcount)
+            }
         }
         
         var correctcount= 0; //amount correct
@@ -115,7 +121,8 @@
         listContainer.id='listcontainer';
         var listElement = document.createElement('ul');
         //defualt for the correct answers and ratio
-        document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+        
+        document.getElementById("answerBtn").innerHTML='PRESS SPACE TO BEGIN!';
         document.getElementById("ratio").innerHTML='Time: 60';
 
         //only "0-9" , "." , and "-" for inputs also enter key works as a button click
@@ -136,25 +143,25 @@
             }
         }
         //for when the answer button is clicked -> also called when the enterkey is pressed
-        document.getElementById('answerBtn').addEventListener('click', answerButtonOnClick)
+        //document.getElementById('answerBtn').addEventListener('click', answerButtonOnClick)
         function answerButtonOnClick() {
             if (testOn==true){
-                input=document.getElementById("userInput").value;
+                input=document.getElementById("userInput").valueAsNumber;
+                
                 answerTest();
             }
 
-            }
+        }
         function startgame(){
             if (testOn==false){
-                // Name=document.getElementById("Name").value;
+                Name=document.getElementById("Name").value;
                 if (Name!=""){
                     document.getElementById("question").innerHTML = "MATH!";
                     currentTime=60
                     testOn=true
                     correctcount= 0;
-                    document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+                    document.getElementById("answerBtn").innerHTML=correctcount;
                     refreshQ();
-                    
                     timerID = setInterval(timer, 1000); 
                 }
         }
@@ -163,6 +170,8 @@
 
         //tests if users answer is correct, refreshed if correct and adds question to history. also counts correct/incorrect and calcs ratio
         function answerTest() {
+            
+            
             if (input==qanswer){
                 document.getElementById("userInput").value='';
                 correctcount=correctcount+1;
@@ -173,7 +182,7 @@
                 wrongcount=wrongcount+1
             }
             correctRatio=correctcount/(wrongcount+correctcount);
-            document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+            document.getElementById("answerBtn").innerHTML=correctcount;
         }
 
         //calculates 2 random numbers based on limits from input/ changes button colors depending on mode and changes answer depending on mode
@@ -185,17 +194,10 @@
             var qnumber1=Math.floor(Math.random() * (upperL-lowerL))+lowerL;
             var qnumber2=Math.floor(Math.random() * (upperL-lowerL))+lowerL+1;
 
-
-
             qanswer=qnumber1*qnumber2;
             document.getElementById("question").innerHTML = (qnumber1+' * '+qnumber2);
-            
             qanswer=qanswer.toString()
         }
-
-
-        
-
         //updates and displays the history-
         function updatehistory() {
             highestscores.length = 0;
@@ -206,19 +208,12 @@
                     let highestScores=[]
                     snapshot.docs.forEach((doc) => {
                         highscores.push({ ...doc.data(), id: doc.id })
-
                         highestscores.push(doc.data().Score)
-                        
-
-
 
                     })
                     console.log(highscores)
-
                         // Make a container element for the list
-
                             // Make the list
-
                             // Set up a loop that goes through the items in listItems one at a time
                             //highestscores.sort().
                     highestscores.sort((a,b)=>a-b)
@@ -269,11 +264,14 @@
             if (currentTime <= 0){
                 clearInterval(timerID);
                 updatehistory()
+
+                if (highestscores.some(el => el < correctcount.value)){
                 addDoc(colRef, {
-                Name: Name.value,
-                Score: correctcount,
-                })
+                    Name: Name.value,
+                    Score: correctcount,
                 
+                 })}
+
                 testOn=false
                 document.getElementById("question").innerHTML = "MATH!";
                 document.getElementById("ratio").innerHTML='Time: 60';
