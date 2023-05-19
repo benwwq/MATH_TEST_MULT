@@ -270,12 +270,12 @@
                 clearInterval(timerID);
                 updatehistory()
 
-                if (highestscores.some(el => el < correctcount.value)){
+                
                 addDoc(colRef, {
                     Name: Name.value,
                     Score: correctcount,
-                
-                 })}
+             
+                 
 
                 testOn=false
                 document.getElementById("question").innerHTML = "MATH!";
