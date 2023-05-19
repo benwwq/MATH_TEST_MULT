@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>MATH!</title>
+        <link rel="stylesheet" href="style.css">
+
+
+    </head>
+
+    <body>
+    <div class="grid-container">
+    <h2></h2>
+
+    <p id="question"></p>
+
+
+
+    <input  type='number' id="userInput"/>
+    <button id="answerBtn" >ENTER</button>
+    <br>
+    <br>
+    <p2 id="count"></p2>
+    <p5 id="ratio">0</p5>
+    </div>
+    </div>
+    <div class="grid2">
+    <p3>Lower Limit: 3</p3>
+
+    <p3>Upper Limit: 12</p3>
+
+    </div>
+    <br>
+    
+    <input  type='text' id="Name"/>
+    <br>
+    <p4>History</p4>
+
+    <div id=historydiv></div>
+
+
+
+
+
+    <!-- <script src="script.js"></script> -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import {
+            getFirestore, collection, getDocs, addDoc
+        } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCFM38NWQHd5yYMiU8ziWrW9kjnUl1kTUE",
+          authDomain: "math-7ed2a.firebaseapp.com",
+          projectId: "math-7ed2a",
+          storageBucket: "math-7ed2a.appspot.com",
+          messagingSenderId: "632689633577",
+          appId: "1:632689633577:web:0c719d410445129a39ef38"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore()
+        var Name = document.getElementById('Name');
+
+        var input = document.getElementById('userInput');
+        var e = 0
+        const colRef = collection(db, 'highscore')
+
+        input.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+        answerButtonOnClick()
+        }});
+        
+        
+
+        
+
+        function uploadScore(Name, correctcount){
+
+            addDoc(colRef, {
+                Name: Name.value,
+                Score: correctcount.value,
+            })
+        }
+        
+        var correctcount= 0; //amount correct
+        var wrongcount= 0;//amount wrong
+        var historylist=[];
+        var highscores=[]
+        var highestscores = []
+        var listItem=0;
+        //these are for changing button colors, assigning the buttons to a variable.
+
+        //these two are for the displaying history list
+        //listContainer = document.createElement('div');
+        //listContainer.id='listcontainer';
+        //listElement = document.createElement('ul');
+        document.getElementById("question").innerHTML = "MATH!";
+        //ratio of correct answers. this is the default probably doesnt need to be here 
+        var correctRatio=0;
+        var testOn=false;
+        var qanswer;
+        var addScore;
+        //starts it off- this function calculates the numbers and answers
+        var timerID; 
+        var listContainer = document.createElement('div');
+        listContainer.id='listcontainer';
+        var listElement = document.createElement('ul');
+        //defualt for the correct answers and ratio
+        document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+        document.getElementById("ratio").innerHTML='Time: 60';
+
+        //only "0-9" , "." , and "-" for inputs also enter key works as a button click
+        function validate(evt) { 
+            var theEvent = evt || window.event;
+
+            var key = theEvent.keyCode || theEvent.which;
+            
+
+            key = String.fromCharCode(key);
+            if (theEvent.keyCode === 13) {
+                answerButtonOnClick();
+            }
+            var regex = /[0-9]|\.|-/;
+            if( !regex.test(key) ) {
+            theEvent.returnValue = false;
+            if(theEvent.preventDefault) theEvent.preventDefault();
+            }
+        }
+        //for when the answer button is clicked -> also called when the enterkey is pressed
+        document.getElementById('answerBtn').addEventListener('click', answerButtonOnClick)
+        function answerButtonOnClick() {
+            if (testOn==true){
+                input=document.getElementById("userInput").value;
+                answerTest();
+            }
+            if (testOn==false){
+                // Name=document.getElementById("Name").value;
+                if (Name!=""){
+                    document.getElementById("question").innerHTML = "MATH!";
+                    currentTime=60
+                    testOn=true
+                    correctcount= 0;
+                    document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+                    refreshQ();
+                    
+                    timerID = setInterval(timer, 1000); 
+                }
+
+            }
+            
+
+        };
+
+        //tests if users answer is correct, refreshed if correct and adds question to history. also counts correct/incorrect and calcs ratio
+        function answerTest() {
+            if (input==qanswer){
+                document.getElementById("userInput").value='';
+                correctcount=correctcount+1;
+                //historylist.unshift((document.getElementById("question").innerHTML+' = '+qanswer));
+                //updatehistory(true);
+                refreshQ();
+            } else {
+                wrongcount=wrongcount+1
+            }
+            correctRatio=correctcount/(wrongcount+correctcount);
+            document.getElementById("count").innerHTML='Correct Answers: '+correctcount;
+        }
+
+        //calculates 2 random numbers based on limits from input/ changes button colors depending on mode and changes answer depending on mode
+        //can be called from starting program, getting correct answer, and changing mode.
+        function refreshQ() {
+            var upperL = 3;
+            var lowerL = 12;
+
+            var qnumber1=Math.floor(Math.random() * (upperL-lowerL))+lowerL;
+            var qnumber2=Math.floor(Math.random() * (upperL-lowerL))+lowerL+1;
+
+
+
+            qanswer=qnumber1*qnumber2;
+            document.getElementById("question").innerHTML = (qnumber1+' * '+qnumber2);
+            
+            qanswer=qanswer.toString()
+        }
+
+
+        
+
+        //updates and displays the history-
+        function updatehistory() {
+            highestscores.length = 0;
+            getDocs(colRef)
+                .then((snapshot) => {
+                    // console.log(snapshot.docs)
+                    let highscores = []
+                    let highestScores=[]
+                    snapshot.docs.forEach((doc) => {
+                        highscores.push({ ...doc.data(), id: doc.id })
+
+                        highestscores.push(doc.data().Score)
+                        
+
+
+
+                    })
+                    console.log(highscores)
+
+                        // Make a container element for the list
+
+                            // Make the list
+
+                            // Set up a loop that goes through the items in listItems one at a time
+                            //highestscores.sort().
+                    highestscores.sort((a,b)=>a-b)
+                    for(var i = 0; i<highestscores.length;i++){
+                    
+                    let listData = highestscores[i],
+
+                    listItem;
+
+
+                    // Add it to the page
+                    document.getElementsByTagName('body')[0].appendChild(listContainer);
+                    listContainer.appendChild(listElement);
+
+                    //limit the history display to 7
+                    if(listElement.childNodes.length>6){
+                        listElement.removeChild(listElement.lastElementChild);
+                    }
+
+                    // create an item for each one
+                    listItem = document.createElement('li');
+
+                    // Add the item text
+                    //listItem.innerHTML = "Name: "+listData[0]+"     |     Score: "+listData[1];
+                    listItem.innerHTML = listData;
+                    // Add listItem to the listElement
+                    listElement.insertBefore(listItem,listElement.childNodes[0]);
+                }
+
+
+                    
+                })
+                .catch(err => {
+                    console.log(err.message)
+            })
+
+
+            
+        }
+
+
+        var currentTime=0
+
+        function timer() {
+
+            currentTime=currentTime-1
+            document.getElementById("ratio").innerHTML='Time: '+currentTime;
+            if (currentTime <= 0){
+                clearInterval(timerID);
+                updatehistory()
+                addDoc(colRef, {
+                Name: Name.value,
+                Score: correctcount,
+                })
+                
+                testOn=false
+                document.getElementById("question").innerHTML = "MATH!";
+                document.getElementById("ratio").innerHTML='Time: 60';
+
+            }
+        }    
+        updatehistory()
+        //turns on the button listening for modes.
+        //addButtonListeners();
+    </script>
+    </body>
+</html>
