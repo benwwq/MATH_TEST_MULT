@@ -74,7 +74,9 @@
 
         input.addEventListener('keypress', function (e) {
         if (e.key === 'Enter') {
-        answerButtonOnClick()
+        answerButtonOnClick()}
+        if (e.key === ' ') {
+        startgame()
         }});
         
         
@@ -140,6 +142,9 @@
                 input=document.getElementById("userInput").value;
                 answerTest();
             }
+
+            }
+        function startgame(){
             if (testOn==false){
                 // Name=document.getElementById("Name").value;
                 if (Name!=""){
@@ -152,9 +157,7 @@
                     
                     timerID = setInterval(timer, 1000); 
                 }
-
-            }
-            
+        }
 
         };
 
