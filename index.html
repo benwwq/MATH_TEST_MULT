@@ -268,15 +268,16 @@
             document.getElementById("ratio").innerHTML='Time: '+currentTime;
             if (currentTime <= 0){
                 clearInterval(timerID);
-                updatehistory()
-                addDoc(colRef, {
-                Name: Name.value,
-                Score: correctcount,
-                })
-                
                 testOn=false
                 document.getElementById("question").innerHTML = "MATH!";
                 document.getElementById("ratio").innerHTML='Time: 60';
+                addDoc(colRef, {
+                Name: Name,
+                Score: correctcount,
+                })
+                updatehistory()
+                
+
 
             }
         }    
